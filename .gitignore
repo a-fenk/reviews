@@ -1,7 +1,7 @@
 /venv/
 /.idea
-/result.txt
 /.~lock.result.xlsx#
 /.DS_Store
 /__pycache__
-
+/source.xlsx
+/result.xlsx
