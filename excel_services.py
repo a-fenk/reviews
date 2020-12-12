@@ -2,6 +2,8 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter, column_index_from_string
 
+import time
+
 from config import Config
 from utils import lemmatize, tokenize
 
@@ -245,27 +247,37 @@ def check_is_corrected(data):
             for original_row in data:
                 if 'tag_name' in tag and tag['tag_name'] == original_row['Name section'] \
                         and row['Masters_URL'] == original_row['Masters_URL']:
-                    tag['tag_name'] = f'{tag["tag_name"]} ({original_row["Кол-во отзывов Corrected - TRUE"]})'
+                    tag['tag_name'] = f'{tag["tag_name"]} [{original_row["Кол-во отзывов Corrected - TRUE"]}]'
                     break
-            if 'tag_name' in tag and '(' not in tag['tag_name'] and ')' not in tag['tag_name']:
-                tag['tag_name'] = f'{tag["tag_name"]} (0)'
+            if 'tag_name' in tag and '[' not in tag['tag_name'] and ']' not in tag['tag_name']:
+                tag['tag_name'] = f'{tag["tag_name"]} [0]'
 
-        row['name_tags'] = sorted(row['name_tags'], key=lambda x: int(x['tag_name'].split('(')[-1].split(')')[0] if
+        row['name_tags'] = sorted(row['name_tags'], key=lambda x: int(x['tag_name'].split('[')[-1].split(']')[0] if
                                                                       'tag_name' in x else 0))
     return data
 
 
 def sort_reviews():
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - STARTING')
+
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - loading source workbook ...')
     source_wb = load_workbook(Config.SOURCE_FILE_NAME)
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - success')
 
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - trying to get masters ...')
     masters = get_masters(source_wb)
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - success, found {len(masters)} masters')
 
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - trying to get tags ...')
     tags = get_tags(source_wb)
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - success, found {len(tags)} tags')
 
     max_related_tags_by_level = {1: 0, 2: 0, 3: 0}
 
     result_data = []
-    for master in masters[:Config.LIMIT_MASTERS]:
+
+    for master_index, master in enumerate(masters[:Config.LIMIT_MASTERS]):
+        print(f'{time.strftime("%H:%M:%S", time.localtime())} - master = {master}, progress = {master_index+1}/{len(masters)}')
         reviews = get_master_related_rows(
             sheet=source_wb[Config.REVIEWS_SHEET],
             master=master,
@@ -305,6 +317,7 @@ def sort_reviews():
 
         result_data += check_is_corrected(reviews_and_sc)
 
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - trying to write data to  {Config.RESULT_FILE_NAME}...')
     write_data_to_excel(
         sheet_name='result',
         workbook=source_wb,
@@ -313,3 +326,5 @@ def sort_reviews():
     )
 
     source_wb.save(Config.RESULT_FILE_NAME)
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - success')
+    print(f'{time.strftime("%H:%M:%S", time.localtime())} - FINISHED')
