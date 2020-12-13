@@ -146,16 +146,29 @@ def merge_reviews_and_sc(reviews, all_sc, master):
 
     for sc in all_sc:
         if not sc['added']:
-            result.append({column: None for column in Config.REVIEWS_COLUMNS
-                           if column not in ['ID container', 'Masters_URL',
-                                             'Кол-во отзывов', 'Кол-во отзывов Corrected - TRUE']} | {
-                              'Masters_URL': master,
-                              'ID container': sc['id container'],
-                              'Address': sc['Address'],
-                              'H1-1': sc['H1-1'],
-                              'Кол-во отзывов': 0,
-                              'Кол-во отзывов Corrected - TRUE': 0,
-                          })
+            merged = {column: None for column in Config.REVIEWS_COLUMNS
+                      if column not in ['ID container', 'Masters_URL',
+                                        'Кол-во отзывов', 'Кол-во отзывов Corrected - TRUE']}
+
+            merged['Masters_URL'] = master
+            merged['ID container'] = sc['id container']
+            merged['Address'] = sc['Address']
+            merged['H1-1'] = sc['H1-1']
+            merged['Кол-во отзывов'] = 0
+            merged['Кол-во отзывов Corrected - TRUE'] = 0
+
+            result.append(merged)
+
+            # result.append({column: None for column in Config.REVIEWS_COLUMNS
+            #                if column not in ['ID container', 'Masters_URL',
+            #                                  'Кол-во отзывов', 'Кол-во отзывов Corrected - TRUE']} | {
+            #                   'Masters_URL': master,
+            #                   'ID container': sc['id container'],
+            #                   'Address': sc['Address'],
+            #                   'H1-1': sc['H1-1'],
+            #                   'Кол-во отзывов': 0,
+            #                   'Кол-во отзывов Corrected - TRUE': 0,
+            #               })
 
     return result
 
@@ -277,7 +290,8 @@ def sort_reviews():
     result_data = []
 
     for master_index, master in enumerate(masters[:Config.LIMIT_MASTERS]):
-        print(f'{time.strftime("%H:%M:%S", time.localtime())} - master = {master}, progress = {master_index+1}/{len(masters)}')
+        print(
+            f'{time.strftime("%H:%M:%S", time.localtime())} - master = {master}, progress = {master_index + 1}/{len(masters)}')
         reviews = get_master_related_rows(
             sheet=source_wb[Config.REVIEWS_SHEET],
             master=master,
