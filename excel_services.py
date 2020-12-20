@@ -225,7 +225,7 @@ def write_data_to_excel(sheet_name, workbook: Workbook, data: list, max_related_
                     tag_index[tag_details['level']] += 1
             else:
                 sheet[f'{get_column_letter(column_index + 1 + sum(extra_index.values()))}' \
-                      f'{str(start_row + row_index)}'].value = row[column]
+                      f'{str(start_row + row_index)}'].value = row[column] if column in row else ''
 
 
 def get_related_tags(review: str, tags: dict):

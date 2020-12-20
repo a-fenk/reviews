@@ -1,16 +1,19 @@
+import os
 import re
+from contextlib import redirect_stdout
 
 import nltk
 from nltk import download
 from nltk.corpus import stopwords
 from pymystem3 import Mystem
 
-download('stopwords', quiet=True)
-download('punkt', quiet=True)
+with redirect_stdout(open(os.devnull, "w")):
+    download('stopwords')
+    download('punkt')
 
-stop_words = stopwords.words('russian')
+    stop_words = stopwords.words('russian')
 
-m = Mystem()
+    m = Mystem()
 
 
 def lemmatize(text):
